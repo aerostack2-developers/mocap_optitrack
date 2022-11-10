@@ -30,7 +30,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch_ros.actions import Node
-from launch.substitutions import TextSubstitution
+from launch.substitutions import TextSubstitution, LaunchConfiguration
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import ThisLaunchFileDir
@@ -38,10 +38,13 @@ from launch.actions import ExecuteProcess
 
 def generate_launch_description():
     return LaunchDescription([
+        DeclareLaunchArgument("namespace", default_value="drone0"),
+        DeclareLaunchArgument("use_sim_time", default_value="false"),
         Node(
             package='mocap_optitrack',
             executable='mocap_node',
             name='mocap_node',
+            namespace=LaunchConfiguration("namespace"),
             parameters=[
                 os.path.join(get_package_share_directory('mocap_optitrack'), 'config', 'mocap.yaml')
             ],

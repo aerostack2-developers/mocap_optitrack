@@ -177,6 +177,8 @@ void NodeConfiguration::fromRosParam(
     {
       publisherConfig.publishTf = true;
     }
+    publisherConfig.publishTf = false;
+    std::cout << "Publicar tfs? Noooooooooooooooooooo :S" << std::endl;
 
     pubConfigs.push_back(publisherConfig);
   }
