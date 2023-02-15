@@ -25,30 +25,47 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os
-from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+import logging
 from launch_ros.actions import Node
-from launch.substitutions import TextSubstitution, LaunchConfiguration
-from launch.actions import IncludeLaunchDescription
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import ThisLaunchFileDir
-from launch.actions import ExecuteProcess
+from launch_ros.substitutions import FindPackageShare
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+
+FORMAT = '[%(levelname)s] [launch]: %(message)s'
+logging.basicConfig(format=FORMAT)
+
+
+def get_node(context):
+    """ Returns the follow_path behavior node """
+    config_file = LaunchConfiguration(
+        'config_file').perform(context)
+
+    if not config_file:
+        logging.warning('No config file provided, using default')
+        config_file = PathJoinSubstitution([
+            FindPackageShare('mocap_optitrack'),
+            'config', 'mocap.yaml'
+        ])
+
+    node = Node(
+        package='mocap_optitrack',
+        executable='mocap_node',
+        namespace=LaunchConfiguration('namespace'),
+        parameters=[config_file],
+        output='screen',
+        emulate_tty=True
+    )
+
+    return [node]
+
 
 def generate_launch_description():
-    return LaunchDescription([
-        DeclareLaunchArgument("namespace", default_value="drone0"),
-        DeclareLaunchArgument("use_sim_time", default_value="false"),
-        Node(
-            package='mocap_optitrack',
-            executable='mocap_node',
-            name='mocap_node',
-            namespace=LaunchConfiguration("namespace"),
-            parameters=[
-                os.path.join(get_package_share_directory('mocap_optitrack'), 'config', 'mocap.yaml')
-            ],
-            output='screen')
+    """ Returns the launch description """
+    launch_description = LaunchDescription([
+        DeclareLaunchArgument('namespace'),
+        DeclareLaunchArgument('config_file', default_value=''),
+        OpaqueFunction(function=get_node)
     ])
-    
-generate_launch_description()
+
+    return launch_description
