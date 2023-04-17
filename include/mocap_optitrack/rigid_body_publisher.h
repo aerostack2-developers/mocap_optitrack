@@ -63,7 +63,7 @@ private:
 
   bool useNewCoordinates;
 
-  double timeDifference;	//For syncing optitrack clock to ROS clock
+  double timeDifference = 0.0;	//For syncing optitrack clock to ROS clock
 
   tf2_ros::TransformBroadcaster tfPublisher;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr posePublisher;
